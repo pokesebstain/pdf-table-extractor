@@ -30,9 +30,10 @@ jobs:
         java-version: '17'
         
     - name: Create Directories
+      shell: cmd
       run: |
-        mkdir -p templates
-        mkdir -p uploads
+        if not exist templates mkdir templates
+        if not exist uploads mkdir uploads
         dir
         
     - name: Install dependencies
@@ -42,14 +43,17 @@ jobs:
         pip list
         
     - name: List Files
+      shell: cmd
       run: |
         dir /s
         
     - name: Build with PyInstaller
+      shell: cmd
       run: |
-        pyinstaller --clean --log-level DEBUG pdf_extractor.spec
+        python -m PyInstaller --clean --log-level DEBUG pdf_extractor.spec
         
     - name: List Build Output
+      shell: cmd
       run: |
         dir dist /s
         
