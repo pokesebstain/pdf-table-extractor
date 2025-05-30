@@ -32,24 +32,37 @@ jobs:
     - name: Create Directories
       shell: cmd
       run: |
-        if not exist templates mkdir templates
-        if not exist uploads mkdir uploads
+        mkdir templates
+        mkdir uploads
+        mkdir assets
         dir
         
     - name: Install dependencies
       shell: cmd
       run: |
         python -m pip install --upgrade pip
-        pip install flask tabula-py pandas openpyxl pillow pystray pyinstaller
+        pip install wheel setuptools
+        pip install flask tabula-py pandas openpyxl pillow pystray pyinstaller jpype1
+        pip list
         
     - name: Build with PyInstaller
       shell: cmd
       run: |
+        set JAVA_HOME=%JAVA_HOME_17_X64%
+        echo %JAVA_HOME%
+        dir "%JAVA_HOME%\bin"
         python -m PyInstaller --clean --log-level DEBUG pdf_extractor.spec
         dir dist
+        
+    - name: Create ZIP archive
+      shell: cmd
+      run: |
+        cd dist
+        powershell Compress-Archive -Path PDFTableExtractor -DestinationPath PDFTableExtractor-Windows.zip
+        dir
         
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: pdf-table-extractor-windows
-        path: dist/pdf_extractor.exe 
+        name: PDFTableExtractor-Windows
+        path: dist/PDFTableExtractor-Windows.zip 

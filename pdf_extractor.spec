@@ -7,15 +7,21 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 block_cipher = None
 
 # 确保目录存在
-if not os.path.exists('templates'):
-    os.makedirs('templates')
-if not os.path.exists('uploads'):
-    os.makedirs('uploads')
+for dir_name in ['templates', 'uploads', 'assets']:
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
+
+# 创建默认图标
+from PIL import Image
+icon_path = os.path.join('assets', 'icon.png')
+if not os.path.exists(icon_path):
+    img = Image.new('RGB', (64, 64), color='red')
+    img.save(icon_path)
 
 # 收集所有需要的数据文件
 datas = [
     ('templates', 'templates'),
-    ('uploads', 'uploads'),
+    ('assets', 'assets'),
 ]
 
 # 收集所有需要的隐藏导入
@@ -28,24 +34,29 @@ hiddenimports = [
     'pystray',
     'PIL._tkinter_finder',
     'pkg_resources.py2_warn',
-    'pkg_resources.markers',
-    'pkg_resources.extern',
-    'pkg_resources._vendor',
+    'jpype',
+    'flask',
+    'werkzeug',
+    'jinja2',
 ]
 
-# 版本信息
-version_info = {
-    'version': '1.0.0',
-    'internal_name': 'PDF表格提取器',
-    'original_filename': 'PDF表格提取器.exe',
-    'product_name': 'PDF表格提取器',
-    'file_description': 'PDF表格提取和转换工具'
-}
+# 添加 Java 相关文件
+java_home = os.environ.get('JAVA_HOME')
+if java_home:
+    java_bin = os.path.join(java_home, 'bin')
+    if sys.platform == 'win32':
+        binaries = [(os.path.join(java_bin, 'server', 'jvm.dll'), 'java/bin/server')]
+    elif sys.platform == 'darwin':
+        binaries = [(os.path.join(java_bin, 'libjli.dylib'), 'java/bin')]
+    else:
+        binaries = [(os.path.join(java_bin, 'libjvm.so'), 'java/bin')]
+else:
+    binaries = []
 
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=[],
+    binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],
@@ -65,7 +76,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='PDF表格提取器',
+    name='PDFTableExtractor',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -76,9 +87,43 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=None,
-    version_info=version_info,
+    icon=icon_path,
+    version='file_version_info.txt',
 )
+
+# 创建版本信息文件
+version_info = '''
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(1, 0, 0, 0),
+    prodvers=(1, 0, 0, 0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo([
+      StringTable(
+        u'040904B0',
+        [StringStruct(u'CompanyName', u''),
+         StringStruct(u'FileDescription', u'PDF Table Extractor'),
+         StringStruct(u'FileVersion', u'1.0.0'),
+         StringStruct(u'InternalName', u'PDFTableExtractor'),
+         StringStruct(u'LegalCopyright', u''),
+         StringStruct(u'OriginalFilename', u'PDFTableExtractor.exe'),
+         StringStruct(u'ProductName', u'PDF Table Extractor'),
+         StringStruct(u'ProductVersion', u'1.0.0')])
+    ]),
+    VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
+  ]
+)
+'''
+
+with open('file_version_info.txt', 'w') as f:
+    f.write(version_info)
 
 coll = COLLECT(
     exe,
@@ -88,5 +133,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='PDF表格提取器',
+    name='PDFTableExtractor',
 ) 
