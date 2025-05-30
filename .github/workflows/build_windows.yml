@@ -37,19 +37,25 @@ jobs:
         dir
         
     - name: Install dependencies
+      shell: cmd
       run: |
         python -m pip install --upgrade pip
+        pip install wheel setuptools
         pip install flask tabula-py pandas openpyxl pillow pystray pyinstaller
         pip list
         
-    - name: List Files
+    - name: Prepare Files
       shell: cmd
       run: |
+        echo Creating test files...
+        echo. > templates\index.html
+        echo. > uploads\.gitkeep
         dir /s
         
     - name: Build with PyInstaller
       shell: cmd
       run: |
+        set PYTHONPATH=%CD%
         python -m PyInstaller --clean --log-level DEBUG pdf_extractor.spec
         
     - name: List Build Output
