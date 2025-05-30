@@ -33,6 +33,15 @@ hiddenimports = [
     'pkg_resources._vendor',
 ]
 
+# 版本信息
+version_info = {
+    'version': '1.0.0',
+    'internal_name': 'PDF表格提取器',
+    'original_filename': 'PDF表格提取器.exe',
+    'product_name': 'PDF表格提取器',
+    'file_description': 'PDF表格提取和转换工具'
+}
+
 a = Analysis(
     ['main.py'],
     pathex=[],
@@ -68,7 +77,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=None,
-    version='1.0.0',
+    version_info=version_info,
 )
 
 coll = COLLECT(
